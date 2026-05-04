@@ -14,7 +14,7 @@ import time
 import os
 from datetime import datetime
 
-# ── Page config ───────────────────────────────────────────────────────────────
+# Page config 
 st.set_page_config(
     page_title="CardioVision — Cardiomegaly Detection",
     page_icon="🫀",
@@ -22,7 +22,7 @@ st.set_page_config(
     initial_sidebar_state="expanded"
 )
 
-# ── Custom CSS ────────────────────────────────────────────────────────────────
+#  Custom CSS 
 st.markdown("""
 <style>
     /* Main background */
@@ -115,7 +115,7 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
-# ── Constants ─────────────────────────────────────────────────────────────────
+# ── Constants 
 IMG_SIZE   = 224
 CLASS_NAMES = ['Normal', 'Cardiomegaly']
 MEAN = [0.485, 0.456, 0.406]
@@ -123,7 +123,7 @@ STD  = [0.229, 0.224, 0.225]
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
-# ── Transforms ────────────────────────────────────────────────────────────────
+# ── Transforms 
 eval_tf = T.Compose([
     T.Resize((IMG_SIZE, IMG_SIZE)),
     T.Grayscale(num_output_channels=3),
@@ -131,7 +131,7 @@ eval_tf = T.Compose([
     T.Normalize(mean=MEAN, std=STD)
 ])
 
-# ── Model builders ────────────────────────────────────────────────────────────
+# ── Model builders 
 def make_head(in_features):
     return nn.Sequential(
         nn.BatchNorm1d(in_features),
@@ -152,7 +152,7 @@ def build_densenet():
     m.classifier = make_head(m.classifier.in_features)
     return m
 
-# ── Load model (cached) ───────────────────────────────────────────────────────
+# ── Load model (cached)
 @st.cache_resource(show_spinner=False)
 def load_model(model_type, weights_path):
     """Load model from .pth file. Cached so it only loads once."""
@@ -170,7 +170,7 @@ def load_model(model_type, weights_path):
     except Exception as e:
         return None, str(e)
 
-# ── Prediction ────────────────────────────────────────────────────────────────
+# ── Prediction 
 def predict(model, image: Image.Image):
     """Run inference on a PIL image. Returns probs array."""
     tensor = eval_tf(image).unsqueeze(0).to(DEVICE)
@@ -179,7 +179,7 @@ def predict(model, image: Image.Image):
         probs  = torch.softmax(logits, dim=1)[0].cpu().numpy()
     return probs  # [normal_prob, cardio_prob]
 
-# ── Grad-CAM ──────────────────────────────────────────────────────────────────
+# ── Grad-CAM 
 def get_gradcam(model, model_type, image: Image.Image):
     """Generate Grad-CAM heatmap. Returns overlay as numpy RGB array."""
     try:
@@ -229,7 +229,7 @@ def get_gradcam(model, model_type, image: Image.Image):
     except Exception:
         return None
 
-# ── Probability bar chart ─────────────────────────────────────────────────────
+# ── Probability bar chart
 def make_prob_chart(probs):
     fig, ax = plt.subplots(figsize=(5, 2.2))
     fig.patch.set_facecolor('#1e2235')
@@ -254,7 +254,7 @@ def make_prob_chart(probs):
     plt.tight_layout(pad=0.5)
     return fig
 
-# ── Confidence gauge ──────────────────────────────────────────────────────────
+# ── Confidence gauge 
 def make_gauge(confidence, label, is_cardio):
     fig, ax = plt.subplots(figsize=(3.5, 2.2), subplot_kw=dict(polar=False))
     fig.patch.set_facecolor('#1e2235')
@@ -281,7 +281,7 @@ def make_gauge(confidence, label, is_cardio):
     plt.tight_layout(pad=0)
     return fig
 
-# ── Session state ─────────────────────────────────────────────────────────────
+# ── Session state 
 if 'history' not in st.session_state:
     st.session_state.history = []
 if 'model_loaded' not in st.session_state:
@@ -369,7 +369,7 @@ with st.sidebar:
     """, unsafe_allow_html=True)
 
     st.markdown("---")
-    st.caption("Aaditya Sharma · MIET · Hestabit Trainee")
+    st.caption(" MIET ")
 
 # ══════════════════════════════════════════════════════════════════════════════
 # MAIN CONTENT
@@ -379,7 +379,7 @@ st.markdown("Upload a chest X-ray image to classify it as **Normal** or **Cardio
 
 st.markdown("---")
 
-# ── Warning strip if model not loaded ────────────────────────────────────────
+# ── Warning strip if model not loaded
 if not st.session_state.model_loaded:
     st.markdown("""
     <div class='info-box'>
@@ -389,7 +389,7 @@ if not st.session_state.model_loaded:
     <br>
     """, unsafe_allow_html=True)
 
-# ── Upload ────────────────────────────────────────────────────────────────────
+# ── Upload 
 col_upload, col_spacer = st.columns([2, 1])
 with col_upload:
     uploaded = st.file_uploader(
@@ -401,7 +401,7 @@ with col_upload:
 if uploaded is not None:
     image = Image.open(uploaded).convert('RGB')
 
-    # ── Two-column layout: image | results ───────────────────────────────────
+    # ── Two-column layout: image | results 
     col_img, col_res = st.columns([1, 1], gap="large")
 
     with col_img:
@@ -440,7 +440,7 @@ if uploaded is not None:
             normal_prob = float(probs[0])
             is_cardio = pred_class == 1
 
-            # ── Main prediction box ───────────────────────────────────────
+            # ── Main prediction box
             if is_cardio:
                 st.markdown(f"""
                 <div class='pred-cardio'>
@@ -458,7 +458,7 @@ if uploaded is not None:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── Probability bars ──────────────────────────────────────────
+            # ── Probability bars 
             st.markdown("**Class Probabilities**")
             st.progress(int(normal_prob * 100),
                         text=f"Normal: {normal_prob*100:.1f}%")
@@ -467,7 +467,7 @@ if uploaded is not None:
 
             st.markdown("<br>", unsafe_allow_html=True)
 
-            # ── Gauge + bar chart ─────────────────────────────────────────
+            # ── Gauge + bar chart
             gc1, gc2 = st.columns(2)
             with gc1:
                 fig_gauge = make_gauge(confidence, CLASS_NAMES[pred_class], is_cardio)
@@ -478,7 +478,7 @@ if uploaded is not None:
                 st.pyplot(fig_bar, use_container_width=True)
                 plt.close()
 
-            # ── Add to history ────────────────────────────────────────────
+            # ── Add to history 
             st.session_state.history.insert(0, {
                 'filename':    uploaded.name,
                 'prediction':  CLASS_NAMES[pred_class],
@@ -490,7 +490,7 @@ if uploaded is not None:
                 'is_cardio':   is_cardio
             })
 
-    # ── Grad-CAM section ─────────────────────────────────────────────────────
+    # ── Grad-CAM section 
     st.markdown("---")
     st.markdown("### 🔍 Grad-CAM Visualization")
     st.markdown("Heatmap showing which regions of the X-ray influenced the prediction most.")

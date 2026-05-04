@@ -526,3 +526,15 @@ CardioVision/
 └── assets/
     └── (optional screenshots / diagrams)
 ```
+
+
+DenseNet path 
+```
+/home/aadityasharma/Downloads/cardiomegaly_results/densenet121_best.pth
+```
+
+EfficientNet path
+
+```
+/home/aadityasharma/Downloads/cardiomegaly_results/efficientnet_b3_best.pth
+```
